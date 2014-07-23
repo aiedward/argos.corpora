@@ -7,9 +7,8 @@ processed, used for training, or w/e.
 
 ## Setup
 * Setup `config.py`
-* Setup the virtualenv and install the dependencies (`requirements.txt`)
+* Run `setup.sh`
 * Setup the `crontab`
-* Ensure MongoDB is running
 * Activate the virtualenv and run `python main.py load_sources` to load
 the sources (from `sources.json`) into the database.
 
