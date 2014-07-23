@@ -1,7 +1,11 @@
 # Get ready
 sudo apt-get update && sudo apt-get upgrade
 
+# General dependencies
 sudo apt-get install python3 bzr git python3-pip
+
+# lxml dependencies
+sudo apt-get install libxml2-dev libxslt1-dev lib32z1-dev python-dev
 
 # MongoDB
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
