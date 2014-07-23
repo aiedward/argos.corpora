@@ -1,0 +1,7 @@
+mongoengine==0.8.7
+pymongo==2.7.1
+
+git+http://code.google.com/p/feedparser
+git+git://github.com/ftzeng/python-readability.git
+git+git://github.com/ftzeng/python-goose.git
+bzr+https://code.launchpad.net/~dateutil/dateutil/trunk

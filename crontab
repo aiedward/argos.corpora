@@ -1,0 +1,7 @@
+# On Ubuntu:
+# $ crontab -e
+# and paste this in.
+
+# Collect every hour.
+# You may need to change this to match your directories.
+0 * * * * cd /srv/argos.corpora/; /env/argos.corpora/bin/python main.py collect;
