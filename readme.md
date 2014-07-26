@@ -30,3 +30,9 @@ $ tar -zxvf dump.tar.gz
 $ cd dump
 $ mongorestore argos_corpora
 ```
+
+It's likely though that you want to export only the training fields
+(`title` and `text`) to a JSON for training:
+```bash
+$ mongoexport -d argos_corpora -c article -f title,text --jsonArray -o articles.json
+```
