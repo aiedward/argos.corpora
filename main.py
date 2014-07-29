@@ -13,6 +13,7 @@ import json
 
 from corpora.models import Source, Feed
 from corpora import collector
+import sampler
 
 def load_sources():
     """
@@ -46,9 +47,15 @@ def load_sources():
 def collect():
     collector.collect()
 
+def sample():
+    if len(sys.argv) < 3:
+        print('Please specify the path to the WikiNews pages-articles XML to sample from.')
+        return
+    sampler.sample(sys.argv[2])
+
 def main():
     if len(sys.argv) < 2:
-        print('You must specify a command: [load_sources, collect]')
+        print('You must specify a command: [load_sources, collect, sample]')
         return
 
     try:

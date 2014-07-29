@@ -10,14 +10,92 @@ from http.client import IncompleteRead
 from http.cookiejar import CookieJar
 from readability.readability import Document
 from goose import Goose
+from dateutil.parser import parse
 
-from urllib import request
+from urllib import request, error
 from os.path import splitext
+from http.client import BadStatusLine
+from itertools import chain
 
 from corpora.logger import logger
-from corpora.request import make_request
+from corpora.request import make_request, MaxRetriesReached
 
 g = Goose()
+
+class NotHTML(Exception):
+    pass
+
+def extract(url, existing_data={}, min_text_length=400):
+    """
+    Extracts data for an article url,
+    returns extracted data as a dict.
+
+    Can optionally provide `existing_data`,
+    which is a dictionary representing an RSS-retrieved article.
+    This data will be favored over extracted data (that is,
+    if another value for a key is extracted, it will be overwritten
+    by an existing value in `existing_data`).
+    """
+
+    # Complete HTML content for this entry.
+    try:
+        entry_data, html = extract_entry_data(url)
+    except (error.HTTPError, error.URLError, ConnectionResetError, BadStatusLine) as e:
+        if type(e) == error.URLError or e.code == 404:
+            # Can't reach, skip.
+            logger.exception('Error extracting data for url {0}'.format(url))
+            return
+        else:
+            # Just skip so things don't break!
+            logger.exception('Error extracting data for url {0}'.format(url))
+            return
+    except MaxRetriesReached:
+        # Just skip so things don't break!
+        logger.exception('Error extracting data for url {0}'.format(url))
+        return
+    except NotHTML:
+        # Just skip so things don't break!
+        logger.exception('Response content-type was not html for url {0}'.format(url))
+        return
+
+    if entry_data is None:
+        return
+
+    full_text = entry_data.cleaned_text
+
+    # Skip over entries that are too short.
+    if len(full_text) < min_text_length:
+        return
+
+    # Get the image url, if one is found.
+    image_url = ''
+    if entry_data.top_image:
+        image_url = entry_data.top_image.src
+
+    existing = {}
+    if existing_data:
+        published = parse(existing_data.get('published')) if existing_data.get('published') else entry_data.publish_date
+        updated = parse(existing_data.get('updated')) if existing_data.get('updated') else published
+        existing = {
+            'published': published,
+            'updated': updated,
+            'title': existing_data.get('title', entry_data.title),
+            'authors': extract_authors(existing_data),
+            'tags': extract_tags(existing_data, known_tags=entry_data.tags)
+        }
+
+    extracted = {
+        'ext_url': entry_data.canonical_link or url,
+        'text': full_text,
+        'published': entry_data.publish_date,
+        'title': entry_data.title,
+        'image': image_url,
+        'tags': entry_data.tags
+    }
+
+    # Give preference to existing data.
+    return dict(chain(extracted.items(), existing.items()))
+
 
 def extract_tags(entry, known_tags=None):
     """
@@ -131,12 +209,6 @@ def extract_entry_data(url):
     try:
         # Use Goose to extract data from the raw html,
         # Use readability to give us the html of the main document.
-
-        # Some HTML comes with additional characters prior
-        # to the actual document, so we want to strip everything up
-        # to the first tag.
-        html = html[html.index(b'<'):]
-
         return g.extract(raw_html=html), Document(html).summary()
 
     except UnicodeDecodeError as e:
@@ -156,9 +228,19 @@ def _get_html(url):
     # Get the raw html.
     # Spoof a user agent.
     # This can help get around 403 (forbidden) errors.
+    html = ''
     try:
-        html = make_request(url, open_func=opener.open, headers={'User-Agent': 'Chrome'}).read()
+        resp = make_request(url, open_func=opener.open, headers={'User-Agent': 'Chrome'})
+        content_type = resp.headers['Content-Type']
+        if 'text/html' not in content_type:
+            raise NotHTML("Content-Type is not text/html, was {0}".format(content_type))
+        html = resp.read()
     except IncompleteRead as e:
         html = e.partial
+
+    # Some HTML comes with additional characters prior
+    # to the actual document, so we want to strip everything up
+    # to the first tag.
+    html = html[html.index(b'<'):]
 
     return html

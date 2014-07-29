@@ -7,16 +7,12 @@ Collects articles from remote feeds to build a corpus.
 
 from corpora.models import Feed, Article
 from corpora import extractor
-from corpora.request import MaxRetriesReached
 from corpora.logger import logger, notify
 
 import json
 import feedparser
-from urllib import error
-from dateutil.parser import parse
 
 from xml.sax._exceptions import SAXException
-from http.client import BadStatusLine
 
 def collect():
     """
@@ -63,59 +59,20 @@ def fetch(feed):
         if Article.objects(ext_url=url).first():
             continue
 
-        # Complete HTML content for this entry.
-        try:
-            entry_data, html = extractor.extract_entry_data(url)
-        except (error.HTTPError, error.URLError, ConnectionResetError, BadStatusLine) as e:
-            if type(e) == error.URLError or e.code == 404:
-                # Can't reach, skip.
-                logger.exception('Error extracting data for url {0}'.format(url))
-                continue
-            else:
-                # Just skip so things don't break!
-                logger.exception('Error extracting data for url {0}'.format(url))
-                continue
-        except MaxRetriesReached:
-            # Just skip so things don't break!
-            logger.exception('Error extracting data for url {0}'.format(url))
+        data = extractor.extract(url, existing_data=entry)
+
+        if data is None:
             continue
-
-        if entry_data is None:
-            continue
-
-        full_text = entry_data.cleaned_text
-
-        # Skip over entries that are too short.
-        if len(full_text) < 400:
-            continue
-
-        url = entry_data.canonical_link or url
-        published = parse(entry.get('published')) if entry.get('published') else entry_data.publish_date
-        updated = parse(entry.get('updated')) if entry.get('updated') else published
-        title = entry.get('title', entry_data.title)
 
         # Secondary check for an existing Article,
         # by checking the title and source.
-        existing = Article.objects(title=title).first()
+        existing = Article.objects(title=data['title']).first()
         if existing and existing.feed.source == feed.source:
             continue
 
-        # Download and save the top article image.
-        image_url = ''
-        if entry_data.top_image:
-            image_url = entry_data.top_image.src
+        data['feed'] = feed
 
-        article = Article(
-            ext_url=url,
-            feed=feed,
-            text=full_text,
-            authors=extractor.extract_authors(entry),
-            tags=extractor.extract_tags(entry, known_tags=entry_data.tags),
-            title=title,
-            created_at=published,
-            updated_at=updated,
-            image=image_url
-        )
+        article = Article(**data)
         article.save()
         new_articles.append(article)
 

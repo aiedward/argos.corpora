@@ -1,7 +1,13 @@
 mongoengine==0.8.7
 pymongo==2.7.1
+Cython==0.20.2 # for mwlib
+lxml==3.3.5
 
 git+http://code.google.com/p/feedparser
 git+git://github.com/ftzeng/python-readability.git
 git+git://github.com/ftzeng/python-goose.git
 bzr+https://code.launchpad.net/~dateutil/dateutil/trunk
+
+# Install unofficial mwlib Python 3 port.
+# This requires libevent on your system.
+git+git://github.com/ftzeng/mwlib_simple.git@simple
