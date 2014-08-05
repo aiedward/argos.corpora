@@ -24,7 +24,7 @@ processing.
 If you ssh into your machine with the database, you can get an export:
 ```bash
 $ mongodump -d argos_corpora -o /tmp
-$ tar -cvzf /tmp/dump.tar.gz /tmp/dump
+$ tar -cvzf /tmp/dump.tar.gz /tmp/argos_corpora
 ```
 
 From your local machine, you can grab it with `scp`
