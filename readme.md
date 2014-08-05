@@ -51,5 +51,5 @@ it constitutes an Event, and its sources are member articles. This data
 is saved to MongoDB and can later be used to evaluate the performance of
 the main Argos project's clustering.
 
-You can downloaded the latest `pages-articles` dump at
+You can download the latest `pages-articles` dump at
 [http://dumps.wikimedia.org/enwikinews/latest/](http://dumps.wikimedia.org/enwikinews/latest/).
