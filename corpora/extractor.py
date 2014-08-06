@@ -41,7 +41,7 @@ def extract(url, existing_data={}, min_text_length=400):
     try:
         entry_data, html = extract_entry_data(url)
     except (error.HTTPError, error.URLError, ConnectionResetError, BadStatusLine) as e:
-        if type(e) == error.URLError or e.code == 404:
+        if type(e) in [error.URLError, BadStatusLine] or e.code == 404:
             # Can't reach, skip.
             logger.exception('Error extracting data for url {0}'.format(url))
             return

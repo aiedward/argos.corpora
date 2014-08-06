@@ -53,3 +53,22 @@ the main Argos project's clustering.
 
 You can download the latest `pages-articles` dump at
 [http://dumps.wikimedia.org/enwikinews/latest/](http://dumps.wikimedia.org/enwikinews/latest/).
+
+I strongly suggest you pare down this dump file to maybe only the last
+100 pages, so you're not fetching a ton of articles.
+
+To use it, run:
+```
+$ python main.py sample /path/to/the/wikinews/dump.xml
+```
+
+That will parse the pages, and for any page that has over two cited
+sources, it will fetch the article data for those sources and save
+everything to MongoDB.
+
+Then you can export that data:
+```
+$ mongoexport -d argos_corpora -c sample_event --jsonArray -o ~/Desktop/sample_events.json
+```
+
+And this can be used in the main [argos](https://github.com/publicscience/argos) project's for evaluation.

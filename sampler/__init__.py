@@ -107,15 +107,15 @@ def build_samples(title, sources):
     e = SampleEvent.objects(title=title).first()
     if e is None:
         e = SampleEvent(title=title)
-        e.save()
 
     for url, published in sources:
-        if SampleArticle.objects(ext_url=url).first():
+        existing = [a for a in e.articles if a.ext_url == url]
+        if existing:
             continue
         d = extractor.extract(url, existing_data={
             'published': published
         })
         if d is not None:
             a = SampleArticle(**d)
-            a.event = e
-            a.save()
+            e.articles.append(a)
+    e.save()

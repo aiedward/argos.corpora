@@ -6,10 +6,7 @@ import config
 # Connect to MongoDB.
 connect('argos_corpora', host=config.MONGO_URI)
 
-class SampleEvent(Document):
-    title = StringField()
-
-class SampleArticle(Document):
+class SampleArticle(EmbeddedDocument):
     ext_url     = StringField(unique=True)
     title       = StringField()
     text        = StringField()
@@ -17,4 +14,7 @@ class SampleArticle(Document):
     authors     = ListField(StringField())
     created_at  = DateTimeField(default=datetime.utcnow)
     updated_at  = DateTimeField(default=datetime.utcnow)
-    event = ReferenceField(SampleEvent)
+
+class SampleEvent(Document):
+    title = StringField()
+    articles = ListField(EmbeddedDocumentField(SampleArticle))
