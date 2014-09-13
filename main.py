@@ -51,7 +51,16 @@ def sample():
     if len(sys.argv) < 3:
         print('Please specify the path to the WikiNews pages-articles XML to sample from.')
         return
+
     sampler.sample(sys.argv[2])
+
+def sample_preview():
+    if len(sys.argv) < 3:
+        print('Please specify the path to the WikiNews pages-articles XML to sample from.')
+        return
+
+    sampler.sample(sys.argv[2], preview=True)
+
 
 def main():
     if len(sys.argv) < 2:

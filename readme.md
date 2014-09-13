@@ -59,6 +59,15 @@ I strongly suggest you pare down this dump file to maybe only the last
 
 To use it, run:
 ```
+# Start mongodb:
+$ mongod --dbpath db
+
+# Preview how many events and articles will be created/downloaded:
+# useful if you don't want to process tens of thousands of things.
+
+$ python main.py sample_preview /path/to/the/wikinews/dump.xml
+
+# Process the dump for reals
 $ python main.py sample /path/to/the/wikinews/dump.xml
 ```
 

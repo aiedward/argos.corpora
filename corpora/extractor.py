@@ -20,12 +20,10 @@ from itertools import chain
 from corpora.logger import logger
 from corpora.request import make_request, MaxRetriesReached
 
-g = Goose()
-
 class NotHTML(Exception):
     pass
 
-def extract(url, existing_data={}, min_text_length=400):
+def extract(url, existing_data={}, min_text_length=400, fetch_images=True):
     """
     Extracts data for an article url,
     returns extracted data as a dict.
@@ -39,7 +37,7 @@ def extract(url, existing_data={}, min_text_length=400):
 
     # Complete HTML content for this entry.
     try:
-        entry_data, html = extract_entry_data(url)
+        entry_data, html = extract_entry_data(url, fetch_images=fetch_images)
     except (error.HTTPError, error.URLError, ConnectionResetError, BadStatusLine) as e:
         if type(e) in [error.URLError, BadStatusLine] or e.code == 404:
             # Can't reach, skip.
@@ -74,8 +72,8 @@ def extract(url, existing_data={}, min_text_length=400):
 
     existing = {}
     if existing_data:
-        published = parse(existing_data.get('published')) if existing_data.get('published') else entry_data.publish_date
-        updated = parse(existing_data.get('updated')) if existing_data.get('updated') else published
+        published = parse(existing_data.get('published', entry_data.publish_date))
+        updated = parse(existing_data.get('updated', published))
         existing = {
             'published': published,
             'updated': updated,
@@ -192,7 +190,7 @@ def extract_authors(entry):
     return authors
 
 
-def extract_entry_data(url):
+def extract_entry_data(url, fetch_images=True):
     """
     Fetch the full content for a feed entry url.
 
@@ -205,6 +203,8 @@ def extract_entry_data(url):
     """
 
     html = _get_html(url)
+    g = Goose()
+    g.config.enable_image_fetching = fetch_images
 
     try:
         # Use Goose to extract data from the raw html,
