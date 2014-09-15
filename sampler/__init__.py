@@ -97,12 +97,11 @@ def sample(file, preview=False):
             if num_sources < 2 or 'Wikinews Shorts' in data['title']:
                 continue
 
-            if num_sources >= 2:
-                if not preview:
-                    build_samples(**data)
+            if not preview:
+                build_samples(**data)
 
-                num_events += 1
-                num_articles += num_sources
+            num_events += 1
+            num_articles += num_sources
 
         # Clear the elem, since we're done with it
         elem.clear()
@@ -143,6 +142,11 @@ def build_samples(title, sources):
             # where something might get messed up, such as 
             # typos or other malformed input, too many
             # to deal with individually.
-            except Exception:
+            except Exception as err:
+                logger.error('ENCOUNTERED EXCEPTION: {0}'.format(err))
                 continue
-    e.save()
+
+    # Some articles may not have been created due to errors.
+    # We'll enforce a minimum of 1 article before saving an event.
+    if len(e.articles) >= 1:
+        e.save()

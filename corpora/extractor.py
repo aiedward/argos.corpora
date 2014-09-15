@@ -35,6 +35,9 @@ def extract(url, existing_data={}, min_text_length=400, fetch_images=True):
     by an existing value in `existing_data`).
     """
 
+    # Clean up the url a little.
+    url = url.strip()
+
     # Complete HTML content for this entry.
     try:
         entry_data, html = extract_entry_data(url, fetch_images=fetch_images)
@@ -73,7 +76,7 @@ def extract(url, existing_data={}, min_text_length=400, fetch_images=True):
     existing = {}
     if existing_data:
         published = parse(existing_data.get('published', entry_data.publish_date))
-        updated = parse(existing_data.get('updated', published))
+        updated = published
         existing = {
             'published': published,
             'updated': updated,

@@ -32,6 +32,7 @@ def make_request(url, max_retries=MAX_RETRIES, open_func=None, headers={}):
     if open_func is None:
         open_func = request.urlopen
 
+    errs = []
     while retries < max_retries:
         try:
             quoted_url = parse.quote(url, safe="%/:=&?~#+!$,;'@()*[]")
@@ -42,6 +43,7 @@ def make_request(url, max_retries=MAX_RETRIES, open_func=None, headers={}):
             if e.code == 503 and retries < max_retries:
                 sleep(1*retries)
                 retries += 1
+                errs.append(e)
             else:
                 raise
 
@@ -49,7 +51,8 @@ def make_request(url, max_retries=MAX_RETRIES, open_func=None, headers={}):
             if retries < max_retries:
                 sleep(1*retries)
                 retries += 1
+                errs.append(e)
             else:
                 raise
 
-    raise MaxRetriesReached("Maximum retries hit for url {0}".format(url))
+    raise MaxRetriesReached("Maximum retries hit for url {0} (quoted={1}). Errors: {2}".format(url, quoted_url, errs))

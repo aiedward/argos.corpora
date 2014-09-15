@@ -61,10 +61,9 @@ def sample_preview():
 
     sampler.sample(sys.argv[2], preview=True)
 
-
 def main():
     if len(sys.argv) < 2:
-        print('You must specify a command: [load_sources, collect, sample]')
+        print('You must specify a command: [load_sources, collect, sample, sample_preview]')
         return
 
     try:
