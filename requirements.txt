@@ -3,6 +3,8 @@ pymongo==2.7.1
 Cython==0.20.2 # for mwlib
 lxml==3.3.5
 
+click==3.3
+
 git+http://code.google.com/p/feedparser
 git+git://github.com/ftzeng/python-readability.git
 git+git://github.com/ftzeng/python-goose.git
