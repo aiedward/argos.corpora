@@ -11,6 +11,7 @@ from http.cookiejar import CookieJar
 from readability.readability import Document
 from goose import Goose
 from dateutil.parser import parse
+from datetime import datetime
 
 from urllib import request, error
 from os.path import splitext
@@ -75,6 +76,7 @@ def extract(url, existing_data={}, min_text_length=400, fetch_images=True):
 
     existing = {}
     if existing_data:
+        entry_data.publish_date = entry_data.publish_date or str(datetime.utcnow())
         published = parse(existing_data.get('published', entry_data.publish_date))
         updated = published
         existing = {

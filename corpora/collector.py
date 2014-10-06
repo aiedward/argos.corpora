@@ -27,6 +27,9 @@ def collect():
             stats[feed.ext_url] = len(new_articles)
 
         except SAXException as e:
+            if feed.errors is None:
+                feed.errors = 0
+
             # Error with the feed, make a note.
             logger.info('Error fetching from {0}.'.format(feed.ext_url))
             feed.errors += 1
